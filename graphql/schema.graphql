@@ -1,7 +1,3 @@
 type Query {
 	sample(dummy: Boolean): String!
 }
-
-type Mutation {
-	dummy(dummy: Boolean): Boolean
-}

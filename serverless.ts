@@ -9,7 +9,7 @@ const serverlessConfiguration: AWS = {
       includeModules: true,
     },
     appSync: {
-      name: "appsync-sample", // AppSyncにデプロイするときの名前。stageの値が追加で付与される
+      name: "appsync-sample-${opt:stage}", // AppSyncにデプロイするときの名前
       authenticationType: "API_KEY", // API_KEY or AWS_IAM or AMAZON_COGNITO_USER_POOLS or OPENID_CONNECT or AWS_LAMBDA
       schema: "./graphql/schema.graphql", // schemaファイルのパス。複数ファイルや正規表現(glob)もOK
       apiKeys: [
@@ -20,25 +20,22 @@ const serverlessConfiguration: AWS = {
           // expiresAt: '2021-03-09T16:00:00+00:00' で指定すれば年月で指定できる
         },
       ],
+      // falseにしておくと、lambdaの呼び出しがデフォルトになります。
+      // dynamoDBや他のものがメインの場合は基本となるvtlを指定しておくと楽かもしれませんね
       defaultMappingTemplates: {
         request: false,
         response: false,
       },
-      mappingTemplatesLocation: "./graphql/mapping-template",
       mappingTemplates: [
+        // queryとdataSourceを結びつける部分
         {
           dataSource: "sample",
           type: "Query",
           field: "sample",
         },
       ],
-      functionConfigurations: [
-        {
-          name: "sample",
-          dataSource: "sample",
-        },
-      ],
       dataSources: [
+        // lambdaをdataSourceに設定する部分。この設定をすることでAppSyncからlambdaを呼び出せる
         {
           type: "AWS_LAMBDA",
           name: "sample",
@@ -63,12 +60,13 @@ const serverlessConfiguration: AWS = {
   provider: {
     name: "aws",
     runtime: "nodejs14.x",
+    stage: '${opt:stage, "local"}',
+    region: "ap-northeast-1",
     environment: {
       AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
     },
     lambdaHashingVersion: "20201221",
   },
-  // import the function via paths
   functions: {
     sample: {
       handler: "src/handler.sample",
