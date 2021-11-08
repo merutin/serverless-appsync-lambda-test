@@ -1,3 +1,3 @@
 type Query {
-	sample(dummy: Boolean): String!
+	sample: String! @aws_lambda
 }
